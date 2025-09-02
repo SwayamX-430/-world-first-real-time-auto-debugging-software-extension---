@@ -1,0 +1,86 @@
+# fix_ai_v4.py
+import ast
+import re
+
+class FixAI:
+    def __init__(self):
+        # 🔹 Dictionary of common mistakes
+        self.rules = {
+            # Built-in keywords
+            "pritn": "print",
+            "prnt": "print",
+            "iput": "input",
+            "defn": "def",
+            "retun": "return",
+            "funtion": "function",
+            "flase": "False",
+            "treu": "True",
+            "intt": "int",
+            "srting": "string",
+            "lenght": "length",
+            "apend": "append",
+            "dictonary": "dictionary",
+            
+            # Signs / Operators
+            " = ": " == ",   # common mistake in if condition
+            ":=": "=",       # accidental walrus use
+        }
+
+    def fix_typos(self, code: str) -> str:
+        fixed_code = code
+        for wrong, correct in self.rules.items():
+            fixed_code = re.sub(rf"\b{wrong}\b", correct, fixed_code)
+        return fixed_code
+
+    def auto_fix_quotes(self, code: str) -> str:
+        if code.count('"') % 2 != 0:
+            code += '"'
+        if code.count("'") % 2 != 0:
+            code += "'"
+        return code
+
+    def auto_fix_parentheses(self, code: str) -> str:
+        if code.count("(") > code.count(")"):
+            code += ")"
+        return code
+
+    def auto_fix_colon(self, code: str) -> str:
+        # Add colon at end of function/if/for/while if missing
+        if re.match(r"^\s*(if|for|while|def|elif).*[^:]\s*$", code):
+            code += ":"
+        return code
+
+    def fix_code(self, code: str) -> str:
+        code = self.fix_typos(code)
+        code = self.auto_fix_quotes(code)
+        code = self.auto_fix_parentheses(code)
+        code = self.auto_fix_colon(code)
+        return code
+
+    def check_syntax(self, code: str) -> str:
+        try:
+            ast.parse(code)
+            return "✅ Fixed successfully!"
+        except SyntaxError as e:
+            return f"❌ Still broken: {e}"
+
+    def run(self):
+        print("🔧 Welcome to Fix.ai v4!")
+        print("Paste buggy Python code (type 'exit' to quit).")
+
+        while True:
+            buggy_code = input("\nBuggy code: ")
+            if buggy_code.lower() == "exit":
+                break
+
+            print("\n🔎 Processing...")
+            fixed = self.fix_code(buggy_code)
+
+            print("➡️ Original:", buggy_code)
+            print("✅ Suggested fix:", fixed)
+            print(self.check_syntax(fixed))
+
+
+if __name__ == "__main__":
+    app = FixAI()
+    app.run()
